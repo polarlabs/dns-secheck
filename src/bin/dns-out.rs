@@ -109,7 +109,7 @@ async fn main() -> Result<(), std::io::Error> {
         }
     }
 
-
+    Ok(())
 }
 
 fn send_tcp_packet(server: &str, key: &str) -> std::io::Result<()> {
