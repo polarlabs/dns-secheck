@@ -24,9 +24,10 @@ pub struct Cli {
 }
 
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<(), std::io::Error> {
     let args = Cli::parse();
     let server = args.server;
+    let mut key = String::new();
 
     let result = mylib::check_status(&server).await;
     match result {
@@ -48,19 +49,29 @@ async fn main() {
                 );
             }
         }
-        Err(_) => error_out("server is down"),
+        Err(e) => {
+            error_out("server is down");
+            return Err(e);
+        }
     }
 
-    let response = mylib::new_test(&server).await.unwrap();
-    let key = response.text().await.unwrap();
-    let key: String = serde_json::from_str(&key).unwrap();
-    key_out(
-        format!(
-            "key: {}. use http://{}/test/{} for test result",
-            key, server, key
-        )
-        .as_str(),
-    );
+    match mylib::new_test(&server).await {
+        Ok(response) => {
+            let tmp = response.text().await.unwrap();
+            key = serde_json::from_str(&tmp).unwrap();
+            key_out(
+                format!(
+                    "key: {}. use http://{}/test/{} for test result",
+                    key, server, key
+                )
+                    .as_str(),
+            );
+        }
+        Err(e) => {
+            error_out("failed to retrieve a test key");
+            return Err(e);
+        }
+    }
 
     let result = send_tcp_packet(&server, &key);
     match result {
