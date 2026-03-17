@@ -1,0 +1,109 @@
+[package]
+name = "dns-secheck"
+version = "0.1.0"
+authors = ["Tobias Mucke <tobias.mucke@gmail.com", ]
+description = "A tool to check DNS security from a network perspective."
+readme = "README.md"
+edition = "2024"
+license = "AGPL-3.0-only"
+
+[lib]
+name = "mylib"
+path = "src/lib/lib.rs"
+
+[dependencies]
+
+[dependencies.actix-web]
+version = "4.13.0"
+default-features = false
+
+# macros: support annotations of handler functions.
+features = ["macros"]
+
+[dependencies.data-encoding]
+version = "2.10.0"
+default-features = false
+
+features = []
+
+[dependencies.clap]
+version = "4.5.60"
+default-features = false
+
+# cargo: use information defined in Cargo.toml in help text.
+# color: improve readability by font style and color.
+# derive: derive command line interface from struct
+# env: support environment variables.
+# error-context: provide distinct error messages on incorrect CLI usage.
+# help: provide help (-h | --help) automatically.
+# std: required to build clap
+# usage: provide usage in help.
+# wrap_help: wrop long lines in help with proper indentation.
+features = ["cargo", "color", "derive", "env", "error-context", "help", "std", "usage", "wrap_help"]
+
+[dependencies.chrono]
+version = "0.4.44"
+default-features = false
+
+# now: provides current date and time
+# serde: supports serialization / deserialization
+features = ["now", "serde"]
+
+[dependencies.hickory-client]
+version = "0.25.2"
+default-features = false
+
+features = []
+
+[dependencies.hickory-proto]
+version = "0.25.2"
+default-features = false
+
+features = []
+
+[dependencies.moka]
+version = "0.12.14"
+default-features = false
+
+features = ["future"]
+
+[dependencies.hickory-server]
+version = "0.25.2"
+default-features = false
+
+features = []
+
+[dependencies.rand]
+version = "0.10.0"
+default-features = false
+
+features = ["thread_rng"]
+
+[dependencies.reqwest]
+version = "0.13.2"
+default-features = false
+
+features = []
+
+[dependencies.serde]
+version = "1.0.228"
+default-features = false
+
+# derive: derive serialization / deserialization code.
+features = ["derive"]
+
+[dependencies.serde_json]
+version = "1.0.149"
+default-features = false
+
+features = []
+
+[dependencies.tokio]
+version = "1.50.0"
+default-features = false
+
+# fs: interact with the filesystem
+# rt: provides tokio's runtime
+# rt-multi-thread: allows multi-threading
+# macros: provides tokio's macros, e.g. to annotate main()
+features = ["fs", "rt", "rt-multi-thread", "macros"]
