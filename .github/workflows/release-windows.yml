@@ -30,17 +30,10 @@ jobs:
           copy target\x86_64-pc-windows-msvc\release\dns-out.exe dist\
           powershell -Command "Compress-Archive -Path dist\* -DestinationPath dist\dns-out.zip"
 
-      - name: create git tag (from commit hash)
-        if: ${{ github.ref == 'refs/heads/main' }}
-        env:
-          SHA: ${{ github.sha }}
-        run: |
-          echo "v0.1.0-${env:SHA}" > tagname.txt
-
       - name: create github release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: file://tagname.txt
+          tag_name: v0.1.0-${{ github.sha }}
           name: "Auto build for ${{ github.sha }}"
           draft: false
           prerelease: true
