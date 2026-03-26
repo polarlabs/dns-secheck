@@ -31,13 +31,49 @@ pub async fn resolve_via_system2(host: &str) {
         TokioConnectionProvider::default()
     ).build();
 
-    let lookup_future = resolver.lookup_ip(format!("{}.", host)).await.unwrap();
+    let lookup = resolver.lookup_ip(format!("{}.", host)).await.unwrap();
+    let lookup = lookup.as_lookup();
 
-    println!("{:?}", lookup_future);
-    println!();
-    println!();
+    for record in lookup.records() {
+        match record.record_type() {
+            RecordType::A => {
+                //println!("{:?}", record.data().as_a());
+
+                let a = record.data().as_a().unwrap();
+                println!("DNS Request was not blocked, host '{}' resolved into {}", host, a);
+            }
+            RecordType::CNAME => {
+                println!("{:?}", record.data().as_cname());
+
+                let cname = record.data().as_cname().unwrap();
+                if cname.to_string() != host {
+                    println!("DNS Request was blocked {:?}", cname);
+                }
+            }
+            _ => {}
+        }
+    }
 }
 
+/*
+todo: check for registered domain
+use publicsuffix::List; // or another PSL crate
+
+fn registered_domain_from_cname(cname_rdata: &RData, psl: &List) -> Option<String> {
+    let target = match cname_rdata {
+        RData::CNAME(name) => name,
+        _ => return None,
+    };
+
+    let domain = target.to_utf8(); // e.g. "a.b.example.co.uk."
+    let domain = domain.trim_end_matches('.'); // remove trailing dot
+
+    psl.parse_domain(domain)
+        .ok()?
+        .root()
+        .map(|d| d.to_string()) // "example.co.uk"
+}
+ */
 pub async fn send_udp_dns_request(server: &str, key: &str) -> std::io::Result<()> {
     let address = SocketAddr::from(([93, 177, 64, 153], 53));
 
