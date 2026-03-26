@@ -34,24 +34,45 @@ pub async fn resolve_via_system2(host: &str) {
     let lookup = resolver.lookup_ip(format!("{}.", host)).await.unwrap();
     let lookup = lookup.as_lookup();
 
+    let mut blocked_n = 0;
     for record in lookup.records() {
         match record.record_type() {
             RecordType::A => {
-                //println!("{:?}", record.data().as_a());
-
-                let a = record.data().as_a().unwrap();
-                println!("DNS Request was not blocked, host '{}' resolved into {}", host, a);
+                let a = record.data().as_a().unwrap().to_string();
+                if blocked_a(&a) {
+                    blocked_n += 1;
+                }
             }
             RecordType::CNAME => {
-                println!("{:?}", record.data().as_cname());
+                let cname = record.data().as_cname().unwrap().to_string();
 
-                let cname = record.data().as_cname().unwrap();
-                if cname.to_string() != host {
-                    println!("DNS Request was blocked {:?}", cname);
+                if blocked_cname(&cname) {
+                    blocked_n += 1;
                 }
             }
             _ => {}
         }
+    }
+
+    if blocked_n == lookup.records().len() {
+        println!("DNS resolution of {} has been blocked", host);
+    } else {
+        println!("DNS resolution of {} has not blocked", host);
+    }
+}
+
+fn blocked_a(a: &str) -> bool {
+    match a {
+        "185.242.177.5" => true,
+        _ => false,
+    }
+
+}
+
+fn blocked_cname(cname: &str) -> bool {
+    match cname {
+        "block.blue-shield.at." => true,
+        _ => false,
     }
 }
 
