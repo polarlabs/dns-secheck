@@ -1,4 +1,4 @@
-use mylib::{error_out, key_out, ok_out, resolve_via_system, send_tcp_dns_request, send_udp_dns_request, warn_out};
+use mylib::{error_out, key_out, ok_out, resolve_via_system, resolve_via_system2, send_tcp_dns_request, send_udp_dns_request, warn_out};
 
 use std::io::{Read, Write};
 use std::time::Duration;
@@ -99,7 +99,9 @@ async fn main() -> Result<(), std::io::Error> {
 
     let domains = mylib::malicious_domains(&server).await;
     for domain in domains {
-        match resolve_via_system(&domain) {
+        resolve_via_system2(&domain).await;
+        /*
+        match resolve_via_system2(&domain) {
             Ok(_) => {
                 warn_out(format!("could resolve known malicious domain {}", domain).as_str());
             }
@@ -107,6 +109,7 @@ async fn main() -> Result<(), std::io::Error> {
                 ok_out(format!("could not resolve known malicious domain {}", domain).as_str());
             }
         }
+        */
     }
 
     Ok(())

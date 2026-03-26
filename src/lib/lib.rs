@@ -5,6 +5,7 @@ pub mod constants;
 
 mod dns_client;
 pub use dns_client::resolve_via_system;
+pub use dns_client::resolve_via_system2;
 pub use dns_client::send_tcp_dns_request;
 pub use dns_client::send_udp_dns_request;
 
