@@ -3,11 +3,9 @@ pub use cache::Cache;
 
 pub mod constants;
 
-mod dns_client;
-pub use dns_client::resolve_via_system;
-pub use dns_client::resolve_via_system2;
-pub use dns_client::send_tcp_dns_request;
-pub use dns_client::send_udp_dns_request;
+pub mod dns;
+pub use dns::DNSClient;
+pub use dns::resolve_via_system;
 
 mod dns_server;
 pub use dns_protocol::is_dns_packet;

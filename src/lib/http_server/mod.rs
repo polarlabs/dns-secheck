@@ -60,7 +60,11 @@ async fn test(data: web::Data<AppState>, path: web::Path<TestKey>) -> impl Respo
     let key = path.into_inner();
 
     let value = data.cache.get(&key).await;
-    HttpResponse::Ok().json(value)
+
+    match value {
+        None => HttpResponse::NotFound().finish(),
+        Some(value) => HttpResponse::Ok().json(value),
+    }
 }
 
 #[get("/malicious-domains")]

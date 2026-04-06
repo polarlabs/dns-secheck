@@ -1,6 +1,7 @@
-use mylib::{error_out, key_out, ok_out, resolve_via_system, resolve_via_system2, send_tcp_dns_request, send_udp_dns_request, warn_out};
+use mylib::{error_out, key_out, ok_out, resolve_via_system, warn_out, DNSClient};
 
 use std::io::{Read, Write};
+use std::net::IpAddr;
 use std::time::Duration;
 
 const SERVER_PORT: &str = "53";
@@ -14,9 +15,9 @@ use mylib::util::Status;
 #[derive(Parser, Clone, Debug)]
 #[command(about, before_help = mylib::legal_note(), version = mylib::version())]
 pub struct Cli {
-    /// Hostname or IP of DNS Secheck Server
+    /// IP of DNS Secheck Server
     #[arg(short = 's', long = "server", env = mylib::constants::ENV_DNS_SECHECK_SERVER, default_value = mylib::constants::DNS_SECHECK_SERVER)]
-    server: String,
+    server: IpAddr,
 
     /// Port to connect to DNS Secheck DNS Server
     #[arg(long = "dns-port", value_parser = value_parser!(u16).range(1..=65535), env = mylib::constants::ENV_DNS_SECHECK_DNS_SERVER_PORT, default_value_t = mylib::constants::DNS_SECHECK_DNS_SERVER_PORT)]
@@ -61,7 +62,7 @@ async fn main() -> Result<(), std::io::Error> {
             key = serde_json::from_str(&tmp).unwrap();
             key_out(
                 format!(
-                    "key: {}. use http://{}/test/{} for test result",
+                    "key: {}. Use http://{}/test/{} for test result",
                     key, server, key
                 )
                     .as_str(),
@@ -85,13 +86,15 @@ async fn main() -> Result<(), std::io::Error> {
         Err(_) => ok_out("could not send arbitrary data to the server on port 53 via UDP"),
     }
 
-    let result = send_udp_dns_request(&server, &key).await;
+    let mut dns_client = DNSClient::new(&server).await?;
+
+    let result = dns_client.send_udp_dns_request(&key).await;
     match result {
         Ok(_) => warn_out("sent and received DNS data to the server on port 53 via UDP"),
         Err(_) => ok_out("could not send DNS data to the server on port 53 via UDP"),
     }
 
-    let result = send_tcp_dns_request(&server, &key).await;
+    let result = dns_client.send_tcp_dns_request(&key).await;
     match result {
         Ok(_) => warn_out("sent and received DNS data to the server on port 53 via TCP"),
         Err(_) => ok_out("could not send DNS data to the server on port 53 via TCP"),
@@ -99,7 +102,7 @@ async fn main() -> Result<(), std::io::Error> {
 
     let domains = mylib::malicious_domains(&server).await;
     for domain in domains {
-        resolve_via_system2(&domain).await;
+        resolve_via_system(&domain).await;
         /*
         match resolve_via_system2(&domain) {
             Ok(_) => {
@@ -115,7 +118,7 @@ async fn main() -> Result<(), std::io::Error> {
     Ok(())
 }
 
-fn send_tcp_packet(server: &str, key: &str) -> std::io::Result<()> {
+fn send_tcp_packet(server: &IpAddr, key: &str) -> std::io::Result<()> {
     let mut stream = mylib::tcp_connect(format!("{server}:{SERVER_PORT}"))?;
     stream.set_read_timeout(Some(READ_TIMEOUT))?;
     stream.set_write_timeout(Some(WRITE_TIMEOUT))?;
@@ -137,7 +140,7 @@ fn send_tcp_packet(server: &str, key: &str) -> std::io::Result<()> {
     }
 }
 
-fn send_udp_packet(server: &str, key: &str) -> std::io::Result<()> {
+fn send_udp_packet(server: &IpAddr, key: &str) -> std::io::Result<()> {
     let socket = mylib::udp::udp_connect(format!("{server}:{SERVER_PORT}"))?;
 
     socket.send(format!("{key}:ping\n").as_bytes())?;

@@ -1,6 +1,7 @@
+use std::net::IpAddr;
 use reqwest::Response;
 
-pub async fn check_status(server: &str) -> std::io::Result<Response> {
+pub async fn check_status(server: &IpAddr) -> std::io::Result<Response> {
     let response = reqwest::get(format!("http://{server}/status")).await;
 
     match response {
@@ -12,7 +13,7 @@ pub async fn check_status(server: &str) -> std::io::Result<Response> {
     }
 }
 
-pub async fn new_test(server: &str) -> std::io::Result<Response> {
+pub async fn new_test(server: &IpAddr) -> std::io::Result<Response> {
     let response = reqwest::get(format!("http://{server}/new")).await;
 
     match response {
@@ -24,7 +25,7 @@ pub async fn new_test(server: &str) -> std::io::Result<Response> {
     }
 }
 
-pub async fn malicious_domains(server: &str) -> Vec<String> {
+pub async fn malicious_domains(server: &IpAddr) -> Vec<String> {
     let response = reqwest::get(format!("http://{server}/malicious-domains")).await;
 
     match response {

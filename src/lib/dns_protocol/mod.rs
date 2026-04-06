@@ -1,8 +1,7 @@
 use crate::util;
 use hickory_proto::op::{Message, MessageType, OpCode, ResponseCode};
-use hickory_proto::rr::rdata::A;
 use hickory_proto::rr::{RData, Record};
-use std::net::Ipv4Addr;
+use crate::dns::util::A;
 
 pub fn parse_dns(packet: &[u8]) -> Result<Message, hickory_proto::ProtoError> {
     Message::from_vec(packet)
@@ -74,7 +73,7 @@ pub fn looks_like_dns_tcp(buf: &[u8]) -> bool {
     true
 }
 
-pub fn build_dns_response(request: &Message) -> Message {
+pub fn build_dns_response(request: &Message, resolved_a: &A) -> Message {
     let mut response = Message::new();
 
     response.set_id(request.id());
@@ -90,7 +89,7 @@ pub fn build_dns_response(request: &Message) -> Message {
     let record = Record::from_rdata(
         query.name().clone(),
         60,
-        RData::A(A::from(Ipv4Addr::new(1, 2, 3, 4))),
+        RData::A(resolved_a.0),
     );
 
     response.add_answer(record);
